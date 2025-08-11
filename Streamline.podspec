@@ -10,8 +10,8 @@ It provides built-in support for HTTP requests, WebSockets, JWT authentication, 
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Vagner Reis' => 'ziminny@gmail.com' }
   s.source           = { :git => 'https://github.com/ziminny/Streamline.git', :tag => s.version.to_s }
-  s.ios.deployment_target = '14.0'
-  s.macos.deployment_target = '11.0'
+  s.ios.deployment_target = '16.0'
+  s.macos.deployment_target = '14.0'
   s.source_files     = 'Sources/**/*.{swift,h}'
   s.swift_versions   = ['5.9', '6.0']
   s.dependency 'Socket.IO-Client-Swift', '~> 16.1.0'
