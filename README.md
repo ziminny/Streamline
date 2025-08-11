@@ -334,6 +334,156 @@ pod 'Streamline', :git => 'https://github.com/ziminny/Streamline.git'
 
 ---
 
+### Client certificate
+- I will show an implementation of the client certificate, for this scenario I assume you send an encrypted certificate from the backend.
+- In the simulator there is no way to use the keychain, hence the #IF diffetive
+
+```Swift
+class MTLSClientCertificateOperation: Operation, @unchecked Sendable  {
+    
+    #if RELEASE
+    
+    @Factory
+    private var certServiceService: MTLSCertificateService
+    
+    @UserDefaultBackend(key: .tokens(.encryptedMTLSPassword))
+    private var encryptedMTLSPassword: String?
+    
+    private(set) var error: Error? = nil
+    
+    private func downloadCert() async throws   {
+        
+        let certExpirationDate = try await certServiceService.getExpirationCertDate()
+        
+        guard let certExpirationDate else {
+            print("❌ Error trying to get certificate expiration date")
+            throw ClientCertificateError.getCertExpirationDate
+        }
+        
+        guard let encryptedMTLSPassword else {
+            print("❌ Error trying to get encrypted password")
+            throw ClientCertificateError.getEncryptedMTLSPassword
+        }
+        
+        var keychainConfiguration = MTLSKeychainConfiguration()
+
+        // Get the encrypted password from the server
+        let encryption = Encryption(keyBase64: Constants.keyDataEncryptedClientCertificateSecretKey)
+        // Secret key previously received from the client
+        let password = try encryption.decrypt(encryptedMessage: encryptedMTLSPassword)
+        
+        guard let keychainLabel = Bundle.main.infoDictionary?["MTLSCertificateName"] as? String else {
+            print("❌ Error trying to get keychainLabel from info.plist")
+            throw ClientCertificateError.getKeychainLabel
+        }
+        
+        keychainConfiguration.setProperties(keychainLabel: keychainLabel, p12Password: password)
+        
+        let renew = certExpirationDate.renew()
+        let identityExistsInKeychain = keychainConfiguration.identityExistsInKeychain()
+
+        if renew || !identityExistsInKeychain {
+            
+            let url = try await certServiceService.download()
+            
+            keychainConfiguration.setProperties(p12CertificateURL: url)
+            
+            try keychainConfiguration.renewCertificate()
+            
+            try? FileManager.default.removeItem(atPath: url.path())
+            
+        }
+        
+    }
+    
+    override func main() {
+        guard !isCancelled else {
+            print("❌ Operation canceled, there was an error in operation MTLSClientCertificateOperation")
+            return
+        }
+        
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        Task {
+            do {
+                try await downloadCert()
+                semaphore.signal()
+            } catch {
+                print("❌ Error \(error) no permission to access the keychain or you are in the simulator")
+                self.error = error
+                // Notifica um erro global para interromper processos dependentes
+                //NotificationCenter.default.post(name: .operationClientCertificateErrorOccurred, object: nil)
+                
+                
+                semaphore.signal()
+            }
+        }
+        semaphore.wait()
+    }
+    
+    #endif
+
+// Class that communicates with the backend
+struct MTLSCertificateDownloadRequestModel: Model {
+    let encryptedMTLSPassword: String
+}
+
+fileprivate enum Error: Swift.Error {
+    case encryptedMTLSPasswordMissing
+}
+
+struct MTLSCertificateService: ServiceProtocol {
+    
+    nonisolated(unsafe) private(set) var factory: HTTPServiceFactoryProtocol
+    
+    @UserDefaultBackend(key: .tokens(.encryptedMTLSPassword))
+    var encryptedMTLSPassword: String?
+    
+    init(withFactory factory: HTTPServiceFactoryProtocol) {
+        self.factory = factory
+    }
+    
+    func download() async throws -> URL {
+        
+        guard let encryptedMTLSPassword else {
+            throw Error.encryptedMTLSPasswordMissing
+        }
+        
+        let request = MTLSCertificateDownloadRequestModel(encryptedMTLSPassword: encryptedMTLSPassword)
+        
+        let result = try await factory.makeHttpService()
+            .interceptor(DefaultInterceptor())
+            .authorization(DefaltAuthorization())
+            .downloadP12CertificateIfNeeded(nsParameters: Parameters(method: .POST, httpRequest: request, path: APIPath.default(.downloadUserCertificate)))
+        
+        return result
+        
+    }
+    
+    func getExpirationCertDate() async throws -> MTLSClientCertificateExpirationDateResponseModel? {
+        
+        let result = try await factory.makeHttpService()
+            .interceptor(DefaultInterceptor())
+            .authorization(DefaltAuthorization())
+            .fetchAsync(
+                MTLSClientCertificateExpirationDateResponseModel.self,
+                parameters: Parameters(
+                    method: .GET,
+                    path: APIPath.default(.clientCertificateExpirationDate)
+                )
+            )
+        
+        return result
+        
+    }
+    
+}
+    
+}
+```
+
+---
+
 ### Bonus, custom UserDefaults
 
 ```Swift
