@@ -250,6 +250,72 @@ if let token = accessToken {
 
 ---
 
+### For pending requests you can use
+
+```Swift
+extension UserService: APIServiceDelegate {
+    
+    // timeConsumingBackgroundTasksNo3GAccess
+    // timeConsumingBackgroundTasks
+    // averageBackgroundTasks
+    // lightBackgroundTasks
+    // noBackgroundTask
+    // Or you can create a custom one
+    /*
+    public extension URLSessionConfiguration {
+    /// Configuration for main tasks (e.g., login, account creation).
+   var myConfiguration: URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.default
+        configuration.httpAdditionalHeaders = [:]
+        configuration.waitsForConnectivity = true
+        configuration.allowsCellularAccess = true
+        configuration.allowsExpensiveNetworkAccess = true
+        configuration.allowsConstrainedNetworkAccess = true
+        // No specific timeout set, uses system defaults (usually shorter)
+        return configuration
+    }
+    */
+    var configurationSession: URLSessionConfiguration { .timeConsumingBackgroundTasks }
+    
+    func networkUnavailableAction(withURL url: URL?) {
+        // Code here
+    }
+}
+```
+
+---
+
+# Pagination
+
+```Swift
+.fetchAsync(
+    Pagination<ResponseModel>.self,
+    parameters: Parameters(
+        method: .GET,
+        path: ApiPath.defaultPath(.test),
+        param: userId
+    )
+)
+```
+
+---
+
+# Query String and Params
+
+```Swift
+.fetchAsync(
+    Pagination<OABProgramContentResponseModel>.self,
+    parameters: Parameters(
+        method: .GET,
+        path: ApiPath.defaultPath(.test),
+        queryString: [.sortBy: "ASC"],
+        param: submatterId,
+    )
+)
+```
+
+---
+
 ## 📦 Installation
 
 Add **Streamline** to your project using Swift Package Manager:
