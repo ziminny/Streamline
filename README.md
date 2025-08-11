@@ -14,7 +14,7 @@ It provides built-in support for HTTP requests, WebSockets, JWT authentication, 
 When starting your application, configure the base URL:
 
 ```swift
-NSAPIConfiguration.shared.application(
+APIConfiguration.shared.application(
     urlConfigs.baseURL,
     urlConfigs.port,
     "iOS",
@@ -37,7 +37,7 @@ enum Paths: String, Sendable {
     case tasks = "Tasks"
 }
 
-extension ApiPath: NSRawValue {
+extension ApiPath: RawValue {
     public var rawValue: String {
         switch self {
         case .defaultPath(let subcase):
@@ -52,12 +52,12 @@ extension ApiPath: NSRawValue {
 ### 3. Define Request and Response Models
 
 ```swift
-struct RequestModel: NSModel {
+struct RequestModel: Model {
     let id: Int
     let name: String
 }
 
-struct ResponseModel: NSModel {
+struct ResponseModel: Model {
     let id: String
     let author: String
     let title: String
@@ -70,11 +70,11 @@ struct ResponseModel: NSModel {
 ### 4. Create a Request
 
 ```swift
-final class TestRequest: NSServiceProtocol {
+final class TestRequest: ServiceProtocol {
     
-    nonisolated(unsafe) private(set) var factory: NSHTTPServiceFactoryProtocol
+    nonisolated(unsafe) private(set) var factory: HTTPServiceFactoryProtocol
     
-    required init(withFactory factory: NSHTTPServiceFactoryProtocol) {
+    required init(withFactory factory: HTTPServiceFactoryProtocol) {
         self.factory = factory
     }
     
@@ -83,7 +83,7 @@ final class TestRequest: NSServiceProtocol {
             .makeHttpService()
             .fetchAsync(
                 [ResponseModel].self,
-                nsParameters: NSParameters(
+                parameters: Parameters(
                     method: .GET,
                     path: ApiPath.defaultPath(.tasks)
                 )
@@ -97,7 +97,7 @@ final class TestRequest: NSServiceProtocol {
 ### 5. Using Arrays as Models
 
 ```swift
-extension Array: @retroactive NSModel where Element: NSModel {}
+extension Array: @retroactive Model where Element: Model {}
 ```
 
 ---
@@ -109,7 +109,7 @@ If you are using SwiftUI, you can inject services directly:
 ```swift
 class ViewModel: ObservableObject {
     
-    @NSFactory var service: TestRequest
+    @Factory var service: TestRequest
     
     func test() {
         Task {
@@ -133,7 +133,7 @@ Closures are also supported.
 ### Request Interceptors
 
 ```swift
-final class DefaultInterceptor: NSRequestInterceptor, @unchecked Sendable {
+final class DefaultInterceptor: RequestInterceptor, @unchecked Sendable {
     
     @UserDefaultBackend(key: .tokens(.accessToken))
     var accessToken: String?
@@ -147,7 +147,7 @@ final class DefaultInterceptor: NSRequestInterceptor, @unchecked Sendable {
 ### Authorization
 
 ```swift
-final class DefaultAuthorization: NSAuthorization, @unchecked Sendable {
+final class DefaultAuthorization: Authorization, @unchecked Sendable {
     
     @UserDefaultBackend(key: .tokens(.accessToken))
     private var accessToken: String?
@@ -159,18 +159,18 @@ final class DefaultAuthorization: NSAuthorization, @unchecked Sendable {
     private var encryptedMTLSPassword: String?
     
     func refreshToken<T>(
-        completion: @escaping (NSModel.Type, NSParameters) async throws -> NSModel
-    ) async throws -> T where T: NSModel {
+        completion: @escaping (Model.Type, Parameters) async throws -> Model
+    ) async throws -> T where T: Model {
         
         let request = RefreshTokenRequestModel(refreshToken: String(describing: refreshToken ?? ""))
         
-        let nsParameters = NSParameters(
+        let parameters = Parameters(
             method: .POST,
             httpRequest: request,
             path: ApiPath.defaultPath(.refreshToken)
         )
         
-        return try await completion(RefreshTokenRequestModel.self, nsParameters) as! T
+        return try await completion(RefreshTokenRequestModel.self, parameters) as! T
     }
     
     func save(withData data: Data) {
@@ -196,7 +196,7 @@ func testRequest() async throws -> [ResponseModel]? {
         .certificate()
         .fetchAsync(
             [ResponseModel].self,
-            nsParameters: NSParameters(
+            parameters: Parameters(
                 method: .GET,
                 path: ApiPath.defaultPath(.test)
             )
@@ -217,11 +217,34 @@ func testRequest() async throws -> [ResponseModel]? {
         .certificate()
         .fetchAsync(
             [ResponseModel].self,
-            nsParameters: NSParameters(
+            parameters: Parameters(
                 method: .GET,
                 path: ApiPath.defaultPath(.test)
             )
         )
+}
+```
+
+---
+
+### Socket
+
+```Swift
+let instance = LCSocketManager.shared
+instance.disconnect()
+        
+if let token = accessToken {
+    instance.setConfiguration(
+        SocketConfiguration(
+            token: token,
+            url: urlConfigs.baseURL,
+            port: urlConfigs.port)
+    )?
+        .connect()
+        .receivedPublisher(eventsName: [
+            Notification.Name("name")
+        ])
+    
 }
 ```
 
