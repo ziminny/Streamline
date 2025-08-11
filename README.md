@@ -368,7 +368,7 @@ struct UserDefaultBackend<Value>: Sendable {
     let key: UserDefaultsAPIKeys
     nonisolated(unsafe) private let storage: UserDefaults
     
-    private var privateQueue = DispatchQueue(label: "com.passeioab.UserDefaultBackend", attributes: .concurrent)
+    private var privateQueue = DispatchQueue(label: "com.queuename.UserDefaultBackend", attributes: .concurrent)
     
     init(key: UserDefaultsAPIKeys) {
         self.key = key
