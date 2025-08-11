@@ -233,7 +233,7 @@ Add **Streamline** to your project using Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/Streamline.git", from: "1.0.0")
+    .package(url: "https://github.com/ziminny/Streamline.git", from: "1.0.0")
 ]
 ```
 
