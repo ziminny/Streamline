@@ -237,6 +237,12 @@ dependencies: [
 ]
 ```
 
+Add **Streamline** to your project using Cocoapods:
+
+```rubi
+pod 'Streamline', :git => 'https://github.com/ziminny/Streamline.git'
+```
+
 ---
 
 ## 📜 License
