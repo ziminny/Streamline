@@ -334,7 +334,7 @@ pod 'Streamline', :git => 'https://github.com/ziminny/Streamline.git'
 
 ---
 
-### Bonus, custum UserDefaults
+### Bonus, custom UserDefaults
 
 ```Swift
 
