@@ -7,22 +7,22 @@
 
 import Foundation
 
-/// Utilitário para decodificar valores a partir de arquivos plist.
-internal class PListFile<Value:Codable> {
+/// Utility to decode values from plist files.
+internal class PListFile<Value: Codable> {
     
-    /// Possíveis erros ao lidar com arquivos plist.
+    /// Possible errors when handling plist files.
     ///
-    /// - `fileNotFound`: Indica que o arquivo plist não foi encontrado.
+    /// - `fileNotFound`: Indicates that the plist file was not found.
     public enum PlistError: Error {
         case fileNotFound
     }
     
     internal enum Source {
         
-        case infoPlist(_:Bundle)
+        case infoPlist(_: Bundle)
         
-        /// Obtém os dados do arquivo plist a partir da fonte.
-        /// - Throws: PlistError.fileNotFound se o arquivo plist não for encontrado ou houver um problema ao obtê-lo.
+        /// Retrieves the data from the plist file based on the source.
+        /// - Throws: PlistError.fileNotFound if the plist file is not found or there is an issue retrieving it.
         internal func data() throws -> Data {
             switch self {
             case .infoPlist(let bundle):
@@ -34,13 +34,13 @@ internal class PListFile<Value:Codable> {
         }
     }
     
-    /// Os dados decodificados do arquivo plist.
+    /// The decoded data from the plist file.
     internal let data: Value
     
-    /// Inicializa um objeto PListFile com a fonte padrão sendo o arquivo info.plist do bundle principal.
+    /// Initializes a PListFile object with the default source being the info.plist file of the main bundle.
     /// - Parameters:
-    ///   - file: A fonte para obter os dados do arquivo plist.
-    /// - Throws: PlistError.fileNotFound se o arquivo plist não for encontrado ou houver um problema ao obtê-lo.
+    ///   - file: The source to obtain the plist file data.
+    /// - Throws: PlistError.fileNotFound if the plist file is not found or there is an issue retrieving it.
     internal init(_ file: PListFile.Source = .infoPlist(Bundle.main)) throws {
         let rawData = try file.data()
         let decoder = JSONDecoder()
@@ -48,3 +48,4 @@ internal class PListFile<Value:Codable> {
     }
     
 }
+

@@ -9,97 +9,77 @@
 
 import Foundation
 
-
 public extension URLSessionConfiguration {
-    /// Tarefas demoradas em segundo plano (Não pode usar dados moveis)
+    /// Configuration for long-running background tasks (No cellular data allowed).
     static var timeConsumingBackgroundTasksNo3GAccess: URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = HTTPHeader.headerDict
         configuration.waitsForConnectivity = true
-        configuration.timeoutIntervalForRequest = 3600 // 1 hora
-        configuration.timeoutIntervalForResource = 60 * 60 * 3 // 3 Hora
-        // Não pode usar 3G
+        configuration.timeoutIntervalForRequest = 600 // 10 minutes
+        configuration.timeoutIntervalForResource = 1800 // 30 minutes
         configuration.allowsCellularAccess = false
-        // Vai ser requisição pesada em segundo plano
-        configuration.allowsExpensiveNetworkAccess = false // (Requisições considerada caras)
-        // Vai ser requisição pesada em segundo plano (desabilitar)
-        configuration.allowsConstrainedNetworkAccess = false // (Low Data Model)
+        configuration.allowsExpensiveNetworkAccess = false // Disallow expensive network usage
+        configuration.allowsConstrainedNetworkAccess = false // Disallow low data mode access
         return configuration
     }
 }
 
 public extension URLSessionConfiguration {
-    /// Tarefas demoradas em segundo plano (Pode usar dados moveis)
+    /// Configuration for long-running background tasks (Cellular data allowed).
     static var timeConsumingBackgroundTasks: URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = HTTPHeader.headerDict
         configuration.waitsForConnectivity = true
-        configuration.timeoutIntervalForRequest = 3600 // 1 hora
-        configuration.timeoutIntervalForResource = 60 * 60 * 3 // 3 Hora
-        // Pode usar 3G
+        configuration.timeoutIntervalForRequest = 600 // 10 minutes
+        configuration.timeoutIntervalForResource = 1800 // 30 minutes
         configuration.allowsCellularAccess = true
-        // Vai ser requisição pesada em segundo plano
-        configuration.allowsExpensiveNetworkAccess = true // (Requisições considerada caras)
-        // Vai ser requisição pesada em segundo plano (desabilitar)
-        configuration.allowsConstrainedNetworkAccess = true // (Low Data Model)
+        configuration.allowsExpensiveNetworkAccess = true // Allow expensive network usage
+        configuration.allowsConstrainedNetworkAccess = true // Allow low data mode access
         return configuration
     }
 }
 
 public extension URLSessionConfiguration {
-    /// Tarefas medias em segundo plano (Pode usar dados moveis)
-    static var averangeBackgroundTasks: URLSessionConfiguration {
+    /// Configuration for average-length background tasks (Cellular data allowed).
+    static var averageBackgroundTasks: URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = HTTPHeader.headerDict
         configuration.waitsForConnectivity = true
-        configuration.timeoutIntervalForRequest = 1800  // 30 Minutos
-        configuration.timeoutIntervalForResource = 60 * 60// 1 Hora
-        // Pode usar 3G
+        configuration.timeoutIntervalForRequest = 300 // 5 minutes
+        configuration.timeoutIntervalForResource = 900 // 15 minutes
         configuration.allowsCellularAccess = true
-        // Vai ser requisição media em segundo plano
-        configuration.allowsExpensiveNetworkAccess = true // (Requisições considerada caras)
-        // Vai ser requisição media em segundo plano (desabilitar)
-        configuration.allowsConstrainedNetworkAccess = true // (Low Data Model)
+        configuration.allowsExpensiveNetworkAccess = true
+        configuration.allowsConstrainedNetworkAccess = true
         return configuration
     }
 }
 
 public extension URLSessionConfiguration {
-    /// Tarefas leves em segundo plano (Pode usar dados moveis)
+    /// Configuration for light background tasks (Cellular data allowed).
     static var lightBackgroundTasks: URLSessionConfiguration {
-        
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = HTTPHeader.headerDict
         configuration.waitsForConnectivity = true
-        configuration.timeoutIntervalForRequest = 900 // 15 minutos
-        configuration.timeoutIntervalForResource = 60 * 60 / 3 // meia Hora
-        // Pode usar 3G
+        configuration.timeoutIntervalForRequest = 120 // 2 minutes
+        configuration.timeoutIntervalForResource = 600 // 10 minutes
         configuration.allowsCellularAccess = true
-        // Vai ser requisição leve mas em segundo plano
-        configuration.allowsExpensiveNetworkAccess = true // (Requisições considerada caras)
-        // Não vai ser requisição pesada
-        configuration.allowsConstrainedNetworkAccess = true // (Low Data Model)
+        configuration.allowsExpensiveNetworkAccess = true
+        configuration.allowsConstrainedNetworkAccess = true
         return configuration
     }
 }
-
 
 public extension URLSessionConfiguration {
-    /// Tarefa Principal, ex:. Login, Criar conta
+    /// Configuration for main tasks (e.g., login, account creation).
     static var noBackgroundTask: URLSessionConfiguration {
-        
         let configuration = URLSessionConfiguration.default
         configuration.httpAdditionalHeaders = HTTPHeader.headerDict
-        // Não vai esperar, caso de erro ja lança para o usuário
         configuration.waitsForConnectivity = true
-        // Pode usar 3G
         configuration.allowsCellularAccess = true
-        // Geralmente vai ser requisicoes leves "barata"
-        configuration.allowsExpensiveNetworkAccess = true // (Requisições considerada caras pelo sistema)
-        // Economia de dados não importa aqui, pois o usuário não esta fazendo requisicoes
-        // em background e vai ser tarefa rapida
-        configuration.allowsConstrainedNetworkAccess = true // (Low Data Model)
-        
+        configuration.allowsExpensiveNetworkAccess = true
+        configuration.allowsConstrainedNetworkAccess = true
+        // No specific timeout set, uses system defaults (usually shorter)
         return configuration
     }
 }
+

@@ -1,0 +1,20 @@
+//
+//  Authorization.swift
+//  
+//
+//  Created by Vagner Oliveira on 06/06/23.
+//
+
+import Foundation
+
+/// API Authorization
+public protocol Authorization: AnyObject where Self: Sendable {
+    
+    /// Retrieves the refresh token and injects it into the request
+    ///  - Model.Type: Return class
+    ///  - Parameters: Request parameters
+    func refreshToken<T: Model>(completion: @escaping (Model.Type, Parameters) async throws -> Model) async throws -> T
+    
+    func save(withData data: Data)
+}
+

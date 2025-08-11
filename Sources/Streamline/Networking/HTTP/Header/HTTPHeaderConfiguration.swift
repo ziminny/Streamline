@@ -7,23 +7,24 @@
 
 import Foundation
 
-/// Estrutura que define as chaves utilizadas para configurar cabeçalhos HTTP.
+/// Structure that defines the keys used to configure HTTP headers.
 internal struct HTTPHeaderConfiguration {
     
-    /// Enumeração que representa as chaves para diferentes tipos de cabeçalhos HTTP.
+    /// Enumeration that represents the keys for different types of HTTP headers.
     enum Keys: String {
-        /// Chave para o cabeçalho "Accept".
+        /// Key for the "Accept" header.
         case accept = "accept"
         
-        /// Chave para o cabeçalho "Content-Type".
+        /// Key for the "Content-Type" header.
         case contentType = "content-type"
         
-        /// Chave para o cabeçalho "User-Agent".
+        /// Key for the "User-Agent" header.
         case userAgent = "user-agent"
         
-        /// Chave para o cabeçalho "Lang".
+        /// Key for the "Lang" header.
         case lang = "lang"
     }
     
 }
+
 

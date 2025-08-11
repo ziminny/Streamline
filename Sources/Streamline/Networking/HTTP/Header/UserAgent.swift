@@ -10,25 +10,24 @@ import Foundation
 import UIKit
 #endif
 
-/// Estrutura para construir o cabeçalho User-Agent para requisições HTTP.
+/// Structure to build the User-Agent header for HTTP requests.
 struct UserAgent: HTTPHeaderProtocol {
     
-    /// Tipo de valor para o cabeçalho User-Agent.
+    /// Value type for the User-Agent header.
     typealias ValueType = String
     
-    /// Chave do cabeçalho User-Agent no contexto da configuração de cabeçalhos HTTP.
+    /// Key of the User-Agent header in the context of HTTP header configuration.
     static var headerKey: HTTPHeaderConfiguration.Keys { .userAgent }
     
-    /// Valor do cabeçalho User-Agent, que depende do sistema operacional.
-    
+    /// Value of the User-Agent header, which depends on the operating system.
     static var headerValue: ValueType {
         
         #if os(iOS)
         
-        // String para armazenar o valor do cabeçalho User-Agent
+        // String to store the User-Agent header value
         var userAgentString: String = ""
         
-        // Tenta obter informações do arquivo Info.plist
+        // Attempts to get information from the Info.plist file
         if let infoPlist = try? PListFile<InfoPlist>(),
            let appName = infoPlist.data.bundleName,
            let version = infoPlist.data.versionNumber,
@@ -36,12 +35,12 @@ struct UserAgent: HTTPHeaderProtocol {
            let cfNetworkVersionString = cfNetworkVersion {
             
             DispatchQueue.main.sync {
-                // Obtém informações do dispositivo iOS
+                // Gets information about the iOS device
                 let modelName = UIDevice.current.model
                 let platform = UIDevice.current.systemName
                 let operationSystemVersion = ProcessInfo.processInfo.operatingSystemVersionString
                 
-                // Constrói a string do cabeçalho User-Agent
+                // Builds the User-Agent header string
                 userAgentString = "\(appName)/\(version).\(build) " +
                     "(\(platform); \(modelName); \(operationSystemVersion)) " +
                     "CFNetwork/\(cfNetworkVersionString)"
@@ -52,13 +51,13 @@ struct UserAgent: HTTPHeaderProtocol {
         
         #else
         
-        // Valor padrão para o caso de não ser iOS (pode ser ajustado para outras plataformas)
+        // Default value for non-iOS platforms (can be adjusted for other platforms)
         return "MacOS"
         
         #endif
     }
     
-    /// Obtém a versão do CFNetwork.
+    /// Retrieves the CFNetwork version.
     static var cfNetworkVersion: String? {
         guard
             let bundle = Bundle(identifier: "com.apple.CFNetwork"),

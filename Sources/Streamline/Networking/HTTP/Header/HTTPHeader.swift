@@ -7,29 +7,30 @@
 
 import Foundation
 
-/// Estrutura que representa os cabeçalhos HTTP utilizados em requisições.
+/// Structure representing the HTTP headers used in requests.
 internal struct HTTPHeader: Decodable {
     
-    /// Dicionário que contém os cabeçalhos HTTP padrão.
+    /// Dictionary containing the default HTTP headers.
     nonisolated(unsafe) static let headerDict: [String: Any] = {
         
-        // Inicializa o dicionário com cabeçalhos padrão.
-        var header: [String: Any] = [:]
-        
-        // Adiciona o cabeçalho User-Agent ao dicionário.
-        header[UserAgent.headerKey.rawValue] = UserAgent.headerValue
-        
-        // Adiciona o cabeçalho Content-Type ao dicionário.
-        header[ContentType.headerKey.rawValue] = ContentType.headerValue
-        
-        // Adiciona o cabeçalho Accept ao dicionário.
-        header[Accept.headerKey.rawValue] = Accept.headerValue
-        
-        // Adiciona o cabeçalho Lang ao dicionário.
-        header[Lang.headerKey.rawValue] = Lang.headerValue
-        
-        // Retorna o dicionário completo de cabeçalhos.
-        return header
+    // Initializes the dictionary with default headers.
+    var header: [String: Any] = [:]
+    
+    // Adds the User-Agent header to the dictionary.
+    header[UserAgent.headerKey.rawValue] = UserAgent.headerValue
+    
+    // Adds the Content-Type header to the dictionary.
+    header[ContentType.headerKey.rawValue] = ContentType.headerValue
+    
+    // Adds the Accept header to the dictionary.
+    header[Accept.headerKey.rawValue] = Accept.headerValue
+    
+    // Adds the Lang header to the dictionary.
+    header[Lang.headerKey.rawValue] = Lang.headerValue
+    
+    // Returns the complete headers dictionary.
+    return header
     }()
 }
+
 

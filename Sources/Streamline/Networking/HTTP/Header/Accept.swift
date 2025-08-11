@@ -7,16 +7,17 @@
 
 import Foundation
 
-/// Implementação do protocolo `HTTPHeaderProtocol` para a configuração do cabeçalho "Accept".
+/// Implementation of the `HTTPHeaderProtocol` for configuring the "Accept" header.
 class Accept: HTTPHeaderProtocol {
     
-    /// Tipo associado para o valor do cabeçalho.
+    /// Associated type for the header value.
     typealias ValueType = String
     
-    /// Chave do cabeçalho "Accept" conforme definido na enumeração `HTTPHeaderConfiguration.Keys`.
+    /// The "Accept" header key as defined in the `HTTPHeaderConfiguration.Keys` enumeration.
     static var headerKey: HTTPHeaderConfiguration.Keys { .accept }
     
-    /// Valor padrão para o cabeçalho "Accept".
+    /// Default value for the "Accept" header.
     static var headerValue: ValueType { "application/json" }
 }
+
 

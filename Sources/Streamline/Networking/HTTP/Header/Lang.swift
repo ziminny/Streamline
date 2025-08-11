@@ -7,20 +7,21 @@
 
 import Foundation
 
-/// Estrutura que representa a configuração do cabeçalho "Lang" para solicitações HTTP.
+/// Structure representing the configuration of the "Lang" header for HTTP requests.
 struct Lang: HTTPHeaderProtocol {
     
-    /// Tipo associado que define o tipo de valor usado para o cabeçalho "Lang".
+    /// Associated type defining the value type used for the "Lang" header.
     typealias ValueType = String
     
-    /// Valor do cabeçalho "Lang" obtido a partir das configurações de localização atual.
+    /// Value of the "Lang" header obtained from the current locale settings.
     static var headerValue: ValueType {
         return Locale.current.identifier
     }
     
-    /// Chave do cabeçalho "Lang".
+    /// Key of the "Lang" header.
     ///
-    /// - Returns: Um valor da enumeração `HTTPHeaderConfiguration.Keys` representando a chave "Lang".
+    /// - Returns: A value of the `HTTPHeaderConfiguration.Keys` enumeration representing the "Lang" key.
     static var headerKey: HTTPHeaderConfiguration.Keys { .lang }
 }
+
 

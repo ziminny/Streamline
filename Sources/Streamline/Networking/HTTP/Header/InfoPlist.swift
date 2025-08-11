@@ -7,29 +7,29 @@
 
 import Foundation
 
-/// Tipo para representar um esquema de URL.
+/// Type alias representing a URL scheme.
 internal typealias URLScheme = String
 
-/// Estrutura que representa um tipo de URL, conforme especificado no arquivo Info.plist.
+/// Structure representing a URL type as specified in the Info.plist file.
 internal struct URLType: Codable {
 
-    /// O papel desse tipo de URL.
+    /// The role of this URL type.
     internal private(set) var role: String?
     
-    /// O arquivo de ícone associado a esse tipo de URL.
+    /// The icon file associated with this URL type.
     internal private(set) var iconFile: String?
     
-    /// Os esquemas de URL associados a esse tipo de URL.
+    /// The URL schemes associated with this URL type.
     internal private(set) var urlSchemes: [URLScheme]
 
-    /// Chaves usadas durante a codificação e decodificação.
+    /// Keys used during encoding and decoding.
     private enum Key: String, CodingKey {
         case role = "CFBundleTypeRole"
         case iconFile = "CFBundleURLIconFile"
         case urlSchemes = "CFBundleURLSchemes"
     }
 
-    /// Inicializador que realiza a decodificação a partir de um decoder.
+    /// Initializer that decodes from a decoder.
     internal init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: Key.self)
 
@@ -39,28 +39,28 @@ internal struct URLType: Codable {
     }
 }
 
-/// Estrutura que representa as informações do arquivo Info.plist.
+/// Structure representing the information of the Info.plist file.
 internal struct InfoPlist: Codable {
 
-    /// O nome a ser exibido para o aplicativo.
+    /// The display name of the app.
     internal private(set) var displayName: String?
     
-    /// O identificador do pacote (bundle identifier) do aplicativo.
+    /// The bundle identifier of the app.
     internal private(set) var bundleId: String
     
-    /// O nome do pacote do aplicativo.
+    /// The bundle name of the app.
     internal private(set) var bundleName: String?
     
-    /// O número da versão do aplicativo.
+    /// The version number of the app.
     internal private(set) var versionNumber: String?
     
-    /// O número da compilação do aplicativo.
+    /// The build number of the app.
     internal private(set) var buildNumber: String?
 
-    /// Os tipos de URL especificados no arquivo Info.plist.
+    /// The URL types specified in the Info.plist file.
     internal private(set) var urlTypes: [URLType]?
 
-    /// Chaves usadas durante a codificação e decodificação.
+    /// Keys used during encoding and decoding.
     private enum Key: String, CodingKey {
         case displayName = "CFBundleDisplayName"
         case bundleName = "CFBundleName"
@@ -70,7 +70,7 @@ internal struct InfoPlist: Codable {
         case urlTypes = "CFBundleURLTypes"
     }
 
-    /// Inicializador que realiza a decodificação a partir de um decoder.
+    /// Initializer that decodes from a decoder.
     internal init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: Key.self)
 

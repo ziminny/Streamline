@@ -7,16 +7,17 @@
 
 import Foundation
 
-/// Estrutura que representa o tipo de conteúdo HTTP para cabeçalho.
+/// Structure representing the HTTP content type header.
 internal struct ContentType: HTTPHeaderProtocol {
     
-    /// O tipo de valor associado à estrutura, que é uma String no caso do ContentType.
+    /// The associated value type for the structure, which is a String for `ContentType`.
     typealias ValueType = String
     
-    /// A chave do cabeçalho, que é fornecida pela enumeração HTTPHeaderConfiguration.Keys.
+    /// The header key, provided by the `HTTPHeaderConfiguration.Keys` enumeration.
     static var headerKey: HTTPHeaderConfiguration.Keys { .contentType }
     
-    /// O valor do cabeçalho, que é a string "application/json" para indicar o tipo de conteúdo JSON.
+    /// The header value, which is the string `"application/json"` to indicate a JSON content type.
     static var headerValue: ValueType { "application/json" }
 }
+
 

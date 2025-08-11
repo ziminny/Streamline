@@ -7,16 +7,17 @@
 
 import Foundation
 
-/// Protocolo que define a estrutura de um cabeçalho HTTP.
+/// Protocol that defines the structure of an HTTP header.
 internal protocol HTTPHeaderProtocol {
     
-    /// Tipo associado para o valor do cabeçalho.
+    /// Associated type for the header value.
     associatedtype ValueType = Any
     
-    /// Valor do cabeçalho.
+    /// Value of the header.
     static var headerValue: ValueType { get }
     
-    /// Chave do cabeçalho.
+    /// Key of the header.
     static var headerKey: HTTPHeaderConfiguration.Keys { get }
 }
+
 
