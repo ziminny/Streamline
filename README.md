@@ -304,7 +304,7 @@ extension UserService: APIServiceDelegate {
 
 ```Swift
 .fetchAsync(
-    Pagination<OABProgramContentResponseModel>.self,
+    Pagination<ProgramContentResponseModel>.self,
     parameters: Parameters(
         method: .GET,
         path: ApiPath.defaultPath(.test),
@@ -330,6 +330,66 @@ Add **Streamline** to your project using Cocoapods:
 
 ```rubi
 pod 'Streamline', :git => 'https://github.com/ziminny/Streamline.git'
+```
+
+---
+
+### Bonus, custum UserDefaults
+
+```Swift
+
+enum UserDefaultsTokensKeys: String {
+    case refreshToken = "refreshToken"
+    case accessToken = "accessToken"
+    case encryptedMTLSPassword = "encryptedMTLSPassword"
+}
+
+enum UserDefaultsAPIKeys {
+    case tokens(UserDefaultsTokensKeys)
+    case other(AnyEnumClass)
+}
+
+extension UserDefaultsAPIKeys {
+    
+    var rawValue: String {
+        switch self {
+        case .tokens(let res):
+            return res.rawValue
+        case .other(let res):
+            return res.rawValue
+        }
+    }
+    
+}
+
+@propertyWrapper
+struct UserDefaultBackend<Value>: Sendable {
+    
+    let key: UserDefaultsAPIKeys
+    nonisolated(unsafe) private let storage: UserDefaults
+    
+    private var privateQueue = DispatchQueue(label: "com.passeioab.UserDefaultBackend", attributes: .concurrent)
+    
+    init(key: UserDefaultsAPIKeys) {
+        self.key = key
+        storage = UserDefaults.standard
+    }
+    
+    var wrappedValue: Value? {
+        get {
+            privateQueue.sync(flags: .barrier) {
+                storage.value(forKey: key.rawValue) as? Value
+            }
+        }
+        set {
+            privateQueue.sync {
+                storage.setValue(newValue, forKey: key.rawValue)
+            }
+        }
+    }
+    
+}
+
 ```
 
 ---
