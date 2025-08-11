@@ -285,7 +285,7 @@ extension UserService: APIServiceDelegate {
 
 ---
 
-# Pagination
+### Pagination
 
 ```Swift
 .fetchAsync(
@@ -300,7 +300,7 @@ extension UserService: APIServiceDelegate {
 
 ---
 
-# Query String and Params
+### Query String and Params
 
 ```Swift
 .fetchAsync(
