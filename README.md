@@ -4,7 +4,7 @@
 ✨ Modular | ⚡️ Blazing Fast | 🧩 Easy Integration  
 
 <p align="center">
-  <img width="400" src="images/logo.png" alt="Streamline Banner">
+  <img width="400" src="https://raw.githubusercontent.com/ziminny/streamline-website/refs/heads/gh-pages/logo.png" alt="Streamline Banner">
 </p>
 
 ## 📚 Official Documentation
