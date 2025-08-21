@@ -40,17 +40,26 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
     
     public init() { }
     
-    /// Importa um certificado P12 do URL configurado nas propriedades.
-    /// - Returns: Uma `SecIdentity` que representa a identidade (certificado e chave privada).
-    /// - Throws: Lança um erro caso ocorra algum problema ao importar o certificado P12.
-    private func importP12Certificate() throws -> SecIdentity {
+    static nonisolated(unsafe) var secIdentity: SecIdentity?
+    
+    private func p12Data() throws -> Data {
         guard let p12CertificateURL = PSKeychainProperties.shared.p12CertificateURL else {
             throw PSCertificateError.urlError
         }
         
-        guard let p12Data = try? Data(contentsOf: p12CertificateURL) else {
+        guard let data = try? Data(contentsOf: p12CertificateURL) else {
             throw PSCertificateError.dataError
         }
+        
+        return data
+    }
+    
+    /// Importa um certificado P12 do URL configurado nas propriedades.
+    /// - Returns: Uma `SecIdentity` que representa a identidade (certificado e chave privada).
+    /// - Throws: Lança um erro caso ocorra algum problema ao importar o certificado P12.
+    private func importP12Certificate() throws -> SecIdentity {
+        
+        let p12Data = try p12Data()
         
         let options: [String: Any] = [
             kSecImportExportPassphrase as String: PSKeychainProperties.shared.p12Password
@@ -68,6 +77,7 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
         }
         
         let identity = item[kSecImportItemIdentity as String] as! SecIdentity
+        
         return identity
     }
     
@@ -78,23 +88,29 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
     public func saveIdentityToKeychain() throws -> Bool {
         let identity = try importP12Certificate()
         
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassIdentity,
-            kSecAttrLabel as String: PSKeychainProperties.shared.keychainLabel,
-            kSecValueRef as String: identity
-        ]
-        
-        let status = SecItemAdd(query as CFDictionary, nil)
-        
-        if status == errSecSuccess {
-            print("Identidade salva com sucesso no Keychain")
-            return true
-        } else if status == errSecDuplicateItem {
-            print("Item já existe no Keychain")
-            return true
+        if #available(iOS 17.0, *) {
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassIdentity,
+                kSecAttrLabel as String: PSKeychainProperties.shared.keychainLabel,
+                kSecValueRef as String: identity
+            ]
+            
+            let status = SecItemAdd(query as CFDictionary, nil)
+            
+            if status == errSecSuccess {
+                print("Identidade salva com sucesso no Keychain")
+                return true
+            } else if status == errSecDuplicateItem {
+                print("Item já existe no Keychain")
+                return true
+            }
+            
+            throw PSCertificateError.errorIdentitySave(status)
+        } else {
+            PSKeychainCertificateHandler.secIdentity = identity
         }
         
-        throw PSCertificateError.errorIdentitySave(status)
+        return true
     }
     
     /// Renova a identidade no Keychain removendo-a e salvando-a novamente.
@@ -131,20 +147,25 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
     /// - Returns: Um objeto `CFTypeRef` que representa a identidade do cliente.
     /// - Throws: Lança um erro caso ocorra algum problema durante a recuperação da identidade.
     public func loadClientIdentity() throws -> CFTypeRef? {
-        var identity: CFTypeRef?
         
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassIdentity,
-            kSecAttrLabel as String: PSKeychainProperties.shared.keychainLabel,
-            kSecReturnRef as String: true
-        ]
-        
-        let status = SecItemCopyMatching(query as CFDictionary, &identity)
-        if status == errSecSuccess {
-            return identity
+        if #available(iOS 17.0, *) {
+            var identity: CFTypeRef?
+            
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassIdentity,
+                kSecAttrLabel as String: PSKeychainProperties.shared.keychainLabel,
+                kSecReturnRef as String: true
+            ]
+            
+            let status = SecItemCopyMatching(query as CFDictionary, &identity)
+            if status == errSecSuccess {
+                return identity
+            }
+            print("STATUS \(status)")
+            throw PSCertificateError.errorLoadIdentity(status)
         }
-        print("STATUS \(status)")
-        throw PSCertificateError.errorLoadIdentity(status)
+        
+        return try importP12Certificate()
     }
     
     /// Verifica se a identidade existe no Keychain.
@@ -160,7 +181,11 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
         var item: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         
-        return status == errSecSuccess
+        if #available(iOS 17.0, *) {
+            return status == errSecSuccess
+        }
+        
+        return false
     }
 
     /// Carrega todas as identidades armazenadas no Keychain.
