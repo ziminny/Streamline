@@ -87,17 +87,48 @@ internal final class APIRequester: Sendable {
     /// - Returns: URL of the downloaded P12 certificate.
     /// - Throws: Throws if the download fails or response is not successful.
     internal func downloadP12CertificateIfNeeded(
-        nsParameters: Parameters
+        nsParameters: Parameters,
+        p12CertificateURLName: String
     ) async throws -> URL  {
         let (url, urlResponse) = try await self.makeRequest.makeDownloadP12Certificate(nsParameters: nsParameters)
         let response = try self.response(with: urlResponse)
         
         if HTTPStatusCodes.successRange ~= response.statusCode {
-            return url
+            if #available(iOS 17.0, *) {
+                return url
+            }
+           return try urlcertificateMoveRollback(tempURL: url, p12CertificateURLName: p12CertificateURLName)
         }
         
         throw APIError.acknowledgedByAPI(.init(statusCode: response.statusCode, message: "Unknown error"))
     }
+    
+   
+/// Moves a temporary file (e.g., from a download) into the app's Documents directory,
+/// replacing any existing file with the same name.
+///
+/// - Parameters:
+///   - tempURL: The temporary file URL (usually located in `/tmp`) returned by
+///              operations such as `URLSessionDownloadTask`.
+///   - p12CertificateURLName: The target file name to use in the Documents directory.
+/// - Returns: The final destination URL inside the app's Documents directory.
+/// - Throws: An error if the file cannot be moved or replaced.
+private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: String) throws -> URL {
+    let fileManager = FileManager.default
+    let destinationURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent(p12CertificateURLName)
+
+    // Remove the file if it already exists at the destination.
+    if fileManager.fileExists(atPath: destinationURL.path) {
+        try fileManager.removeItem(at: destinationURL)
+    }
+
+    // Move the temporary file to the destination.
+    try fileManager.moveItem(at: tempURL, to: destinationURL)
+    
+    return destinationURL
+}
+
     
     /// Sends an asynchronous request and handles the response according to the expected model type.
     /// - Parameters:
@@ -190,7 +221,7 @@ internal final class APIRequester: Sendable {
     }
     
     deinit {
-        print("N_S DEINIT \(Self.self)")
+        debugPrint("N_S DEINIT \(Self.self)")
     }
 
 }

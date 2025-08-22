@@ -188,9 +188,14 @@ public final class APIService: Sendable {
     
     /// Downloads the P12 certificate if it is not already available.
     public func downloadP12CertificateIfNeeded(
-        nsParameters: Parameters
+        nsParameters: Parameters,
+        p12CertificateURLName: String
     ) async throws -> URL {
-        return try await apiRequester.downloadP12CertificateIfNeeded(nsParameters: nsParameters)
+        return try await apiRequester
+            .downloadP12CertificateIfNeeded(
+                nsParameters: nsParameters,
+                p12CertificateURLName: p12CertificateURLName
+            )
     }
     
     deinit {

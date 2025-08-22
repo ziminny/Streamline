@@ -47,7 +47,12 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
             throw PSCertificateError.urlError
         }
         
-        guard let data = try? Data(contentsOf: p12CertificateURL) else {
+        let data: Data
+        
+        do {
+            data = try Data(contentsOf: p12CertificateURL)
+        } catch {
+            debugPrint("Load data error: \(error), file path p12CertificateURL: \(p12CertificateURL)")
             throw PSCertificateError.dataError
         }
         
@@ -98,10 +103,10 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
             let status = SecItemAdd(query as CFDictionary, nil)
             
             if status == errSecSuccess {
-                print("Identidade salva com sucesso no Keychain")
+                debugPrint("Identity successfully saved to Keychain")
                 return true
             } else if status == errSecDuplicateItem {
-                print("Item já existe no Keychain")
+                debugPrint("Item already exists in Keychain")
                 return true
             }
             
@@ -132,13 +137,13 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
         let status = SecItemDelete(deleteQuery as CFDictionary)
         
         if status == errSecSuccess {
-            print("Item removido com sucesso.")
+            debugPrint("Item removed successfully.")
             return true
         } else if status == errSecItemNotFound {
-            print("Item não encontrado no Keychain.")
+            debugPrint("Item not found in Keychain.")
             return false
         } else {
-            print("Erro ao tentar remover item: \(status)")
+            debugPrint("Error trying to remove item: \(status)")
             return false
         }
     }
@@ -161,7 +166,7 @@ public struct PSKeychainCertificateHandler: PSKeychainCertificateProtocol {
             if status == errSecSuccess {
                 return identity
             }
-            print("STATUS \(status)")
+            debugPrint("OSStatus error: \(status)")
             throw PSCertificateError.errorLoadIdentity(status)
         }
         
