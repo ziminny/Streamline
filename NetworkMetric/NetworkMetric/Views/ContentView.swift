@@ -69,10 +69,10 @@ struct ContentView: View {
                             viewModel.getAllPosts { result in
                                 switch result {
                                 case .success(let posts):
-                                    
+                                    deleteAllPosts()
                                     posts.forEach {
                                         let postData = Post.Data(post: $0)
-                                        // modelContext.insert(postData)
+                                         modelContext.insert(postData)
                                     }
                                 case .failure(let failure):
                                     print("Error", failure)
@@ -88,6 +88,7 @@ struct ContentView: View {
                 Text("Select an item")
             }
             .onAppear {
+                deleteAllPosts()
                 APIURLSession.shared.onMetric = { metric in
                     self.metric = metric
                 }
@@ -96,6 +97,20 @@ struct ContentView: View {
             if viewModel.isLoading {
                 ProgressView("Carregando...")
             }
+        }
+    }
+    
+    private func deleteAllPosts() {
+        // Deleta cada item retornado pelo @Query
+        for post in items {
+            modelContext.delete(post)
+        }
+
+        // Salva as alterações
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to delete all posts: \(error)")
         }
     }
     
