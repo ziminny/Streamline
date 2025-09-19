@@ -1,6 +1,6 @@
 //
 //  APIConfiguration.swift
-//  
+//
 //
 //  Created by Vagner Oliveira on 03/06/23.
 //
@@ -49,12 +49,11 @@ public struct APIConfiguration: Sendable {
         _ apiKey: String? = nil,
         _ language: Language = .enUS) {
             
-        self.baseUrl = baseURL
-        self.port = port
-        self.apiKey = apiKey
-        self.language = language
-            
-    }
+            self.baseUrl = baseURL
+            self.port = port
+            self.apiKey = apiKey
+            self.language = language
+        }
     
     /// Private initializer method.
     // private init() { }
@@ -63,10 +62,10 @@ public struct APIConfiguration: Sendable {
 
 /// Extension that implements the `URLSessionConnectivity` protocol for the API configuration.
 // extension APIConfiguration {
-    /// Method to check for connectivity before performing a request.
-    ///
-    /// - Parameter url: The URL for which connectivity will be verified.
-    // func checkWaitingForConnectivity(withURL url: URL?) {
-    //     delegate?.checkWaitingForConnectivity(withURL: url)
-    // }
+/// Method to check for connectivity before performing a request.
+///
+/// - Parameter url: The URL for which connectivity will be verified.
+// func checkWaitingForConnectivity(withURL url: URL?) {
+//     delegate?.checkWaitingForConnectivity(withURL: url)
+// }
 // }

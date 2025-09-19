@@ -30,6 +30,8 @@ public final class APIURLSession: NSObject, APIURLSessionProtocol {
     /// Private queue for synchronizing access and delegate callbacks.
     public nonisolated let privateQueue = DispatchQueue(label: "com.APIURLSession.URLSessionConnectivity", qos: .background)
     
+    public var onMetric: ((NetworkMetric) -> Void)?
+    
     /// Private initializer to enforce singleton pattern.
     override private init() {
         super.init()
@@ -79,6 +81,15 @@ extension APIURLSession: URLSessionTaskDelegate, URLSessionDelegate {
             print("Error handling challenge:", error)
             completionHandler(.performDefaultHandling, nil)
         }
+    }
+    
+    public func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        NetworkFinishCollecting.shared.urlSession(
+            session,
+            task: task,
+            didFinishCollecting: metrics,
+            onMetric: onMetric
+        )
     }
     
 }
