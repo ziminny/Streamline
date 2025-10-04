@@ -20,6 +20,6 @@ public protocol Authorization: AnyObject where Self: Sendable {
     ///  - Parameters: Request parameters
     func refreshToken<T: Model>(statusCode: AuthorizationErrorCodes, completion: @escaping (Model.Type, Parameters) async throws -> Model) async throws -> T
     
-    func save(withData data: Data)
+    func save(withData data: Data, statusCode: AuthorizationErrorCodes)
 }
 

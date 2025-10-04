@@ -169,7 +169,8 @@ private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: Str
                         witHTTPResponse: nsModel,
                         nsParameters: nsParams,
                         lastCallReponse: witHTTPResponse,
-                        lastParameters: nsParameters
+                        lastParameters: nsParameters,
+                        statusCode: authorizationErrorCodes
                     )
                 })
             }
@@ -196,7 +197,8 @@ private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: Str
         witHTTPResponse: T.Type,
         nsParameters: Parameters,
         lastCallReponse: S.Type,
-        lastParameters: Parameters
+        lastParameters: Parameters,
+        statusCode: AuthorizationErrorCodes
     ) async throws -> S {
         isCancelableRequestGetRefreshToken = true
         
@@ -204,7 +206,7 @@ private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: Str
         let response = try self.response(with: urlResponse)
         
         if (response.statusCode == HTTPStatusCodes.ok || response.statusCode == HTTPStatusCodes.created) {
-            self.authorization?.save(withData: data)
+            self.authorization?.save(withData: data, statusCode: statusCode)
             return try await self.fetch(witHTTPResponse: lastCallReponse, andParameters: lastParameters)
         }
         
