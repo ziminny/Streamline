@@ -15,6 +15,8 @@ public enum AuthorizationErrorCodes: Error {
 /// API Authorization
 public protocol Authorization: AnyObject where Self: Sendable {
     
+    var p12CertificateURLName: String { get }
+    
     /// Retrieves the refresh token and injects it into the request
     ///  - Model.Type: Return class
     ///  - Parameters: Request parameters

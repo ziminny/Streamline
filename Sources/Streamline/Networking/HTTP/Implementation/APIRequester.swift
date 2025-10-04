@@ -202,6 +202,13 @@ private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: Str
     ) async throws -> S {
         isCancelableRequestGetRefreshToken = true
         
+        if statusCode == .certificateError {
+            let url = try await downloadP12CertificateIfNeeded(nsParameters: nsParameters, p12CertificateURLName: authorization?.p12CertificateURLName ?? "")
+            let data = try Data(contentsOf: url)
+            authorization?.save(withData: data, statusCode: statusCode)
+            return try await self.fetch(witHTTPResponse: lastCallReponse, andParameters: lastParameters)
+        }
+        
         let (data, urlResponse) = try await self.makeRequest.make(nsParameters: nsParameters)
         let response = try self.response(with: urlResponse)
         
