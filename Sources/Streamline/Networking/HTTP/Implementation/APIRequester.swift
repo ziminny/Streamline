@@ -149,14 +149,22 @@ private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: Str
             return result
         }
         
-        if response.statusCode == HTTPStatusCodes.unauthorized {
+        if response.statusCode == HTTPStatusCodes.unauthorized || response.statusCode == HTTPStatusCodes.notAcceptable {
             guard let authorization = authorization else {
                 PLMLogger.logIt("Error in \(#function): authorization provider not implemented.")
                 throw self.dispachError("Authorization provider not implemented.")
             }
             
+            let authorizationErrorCodes: AuthorizationErrorCodes
+            
+            if response.statusCode == HTTPStatusCodes.unauthorized {
+                authorizationErrorCodes = .unauthorized
+            } else {
+                authorizationErrorCodes = .certificateError
+            }
+            
             if !isCancelableRequestGetRefreshToken {
-                return try await authorization.refreshToken(completion: { [unowned self] (nsModel, nsParams) async throws in
+                return try await authorization.refreshToken(statusCode: authorizationErrorCodes, completion: { [unowned self] (nsModel, nsParams) async throws in
                     return try await self.refreshToken(
                         witHTTPResponse: nsModel,
                         nsParameters: nsParams,
