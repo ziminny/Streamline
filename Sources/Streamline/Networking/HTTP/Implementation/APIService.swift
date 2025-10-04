@@ -59,6 +59,13 @@ public final class APIService: Sendable {
         return self
     }
     
+    public func resetCertificateCached() -> Self {
+        //#if DEVELOPMENT || RELEASE
+        apiRequester.apiURLSession.certificateInterceptor = nil
+        //#endif
+        return self
+    }
+    
     /// Sets the authorization information for the request.
     @discardableResult
     public func authorization(_ authorization: Authorization) -> Self {

@@ -204,8 +204,15 @@ private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: Str
         
         if statusCode == .certificateError {
             let url = try await downloadP12CertificateIfNeeded(nsParameters: nsParameters, p12CertificateURLName: authorization?.p12CertificateURLName ?? "")
-            let data = try Data(contentsOf: url)
+            
+            let urlDict = [
+                "url": url
+            ]
+            
+            let data = try JSONEncoder().encode(urlDict)
+            
             authorization?.save(withData: data, statusCode: statusCode)
+            apiURLSession.certificateInterceptor = PSURLSessionLoadCertificate(keychain: PSKeychainCertificateHandler())
             return try await self.fetch(witHTTPResponse: lastCallReponse, andParameters: lastParameters)
         }
         
