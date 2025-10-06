@@ -59,13 +59,6 @@ public final class APIService: Sendable {
         return self
     }
     
-    public func resetCertificateCached() -> Self {
-        //#if DEVELOPMENT || RELEASE
-        apiRequester.apiURLSession.certificateInterceptor = nil
-        //#endif
-        return self
-    }
-    
     /// Sets the authorization information for the request.
     @discardableResult
     public func authorization(_ authorization: Authorization) -> Self {
@@ -191,18 +184,6 @@ public final class APIService: Sendable {
                 }
             }
         }
-    }
-    
-    /// Downloads the P12 certificate if it is not already available.
-    public func downloadP12CertificateIfNeeded(
-        nsParameters: Parameters,
-        p12CertificateURLName: String
-    ) async throws -> URL {
-        return try await apiRequester
-            .downloadP12CertificateIfNeeded(
-                nsParameters: nsParameters,
-                p12CertificateURLName: p12CertificateURLName
-            )
     }
     
     deinit {

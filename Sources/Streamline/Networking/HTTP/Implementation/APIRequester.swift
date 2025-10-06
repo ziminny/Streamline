@@ -82,54 +82,6 @@ internal final class APIRequester: Sendable {
         return try await self.send(witHTTPResponse: httpResponse, nsParameters: nsParameters)
     }
     
-    /// Downloads a P12 certificate if needed.
-    /// - Parameter nsParameters: The parameters for the request.
-    /// - Returns: URL of the downloaded P12 certificate.
-    /// - Throws: Throws if the download fails or response is not successful.
-    internal func downloadP12CertificateIfNeeded(
-        nsParameters: Parameters,
-        p12CertificateURLName: String
-    ) async throws -> URL  {
-        let (url, urlResponse) = try await self.makeRequest.makeDownloadP12Certificate(nsParameters: nsParameters)
-        let response = try self.response(with: urlResponse)
-        
-        if HTTPStatusCodes.successRange ~= response.statusCode {
-            if #available(iOS 17.0, *) {
-                return url
-            }
-           return try urlcertificateMoveRollback(tempURL: url, p12CertificateURLName: p12CertificateURLName)
-        }
-        
-        throw APIError.acknowledgedByAPI(.init(statusCode: response.statusCode, message: "Unknown error"))
-    }
-    
-   
-/// Moves a temporary file (e.g., from a download) into the app's Documents directory,
-/// replacing any existing file with the same name.
-///
-/// - Parameters:
-///   - tempURL: The temporary file URL (usually located in `/tmp`) returned by
-///              operations such as `URLSessionDownloadTask`.
-///   - p12CertificateURLName: The target file name to use in the Documents directory.
-/// - Returns: The final destination URL inside the app's Documents directory.
-/// - Throws: An error if the file cannot be moved or replaced.
-private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: String) throws -> URL {
-    let fileManager = FileManager.default
-    let destinationURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent(p12CertificateURLName)
-
-    // Remove the file if it already exists at the destination.
-    if fileManager.fileExists(atPath: destinationURL.path) {
-        try fileManager.removeItem(at: destinationURL)
-    }
-
-    // Move the temporary file to the destination.
-    try fileManager.moveItem(at: tempURL, to: destinationURL)
-    
-    return destinationURL
-}
-
-    
     /// Sends an asynchronous request and handles the response according to the expected model type.
     /// - Parameters:
     ///   - witHTTPResponse: The expected response type to decode.
@@ -164,13 +116,12 @@ private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: Str
             }
             
             if !isCancelableRequestGetRefreshToken {
-                return try await authorization.refreshToken(statusCode: authorizationErrorCodes, completion: { [unowned self] (nsModel, nsParams) async throws in
+                return try await authorization.refreshToken(completion: { [unowned self] (nsModel, nsParams) async throws in
                     return try await self.refreshToken(
                         witHTTPResponse: nsModel,
                         nsParameters: nsParams,
                         lastCallReponse: witHTTPResponse,
-                        lastParameters: nsParameters,
-                        statusCode: authorizationErrorCodes
+                        lastParameters: nsParameters
                     )
                 })
             }
@@ -197,30 +148,15 @@ private func urlcertificateMoveRollback(tempURL: URL, p12CertificateURLName: Str
         witHTTPResponse: T.Type,
         nsParameters: Parameters,
         lastCallReponse: S.Type,
-        lastParameters: Parameters,
-        statusCode: AuthorizationErrorCodes
+        lastParameters: Parameters
     ) async throws -> S {
         isCancelableRequestGetRefreshToken = true
-        
-        if statusCode == .certificateError {
-            let url = try await downloadP12CertificateIfNeeded(nsParameters: nsParameters, p12CertificateURLName: authorization?.p12CertificateURLName ?? "")
-            
-            let urlDict = [
-                "url": url
-            ]
-            
-            let data = try JSONEncoder().encode(urlDict)
-            
-            authorization?.save(withData: data, statusCode: statusCode)
-            apiURLSession.certificateInterceptor = PSURLSessionLoadCertificate(keychain: PSKeychainCertificateHandler())
-            return try await self.fetch(witHTTPResponse: lastCallReponse, andParameters: lastParameters)
-        }
         
         let (data, urlResponse) = try await self.makeRequest.make(nsParameters: nsParameters)
         let response = try self.response(with: urlResponse)
         
         if (response.statusCode == HTTPStatusCodes.ok || response.statusCode == HTTPStatusCodes.created) {
-            self.authorization?.save(withData: data, statusCode: statusCode)
+            self.authorization?.save(withData: data)
             return try await self.fetch(witHTTPResponse: lastCallReponse, andParameters: lastParameters)
         }
         
