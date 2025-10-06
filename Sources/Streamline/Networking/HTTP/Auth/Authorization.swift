@@ -7,11 +7,6 @@
 
 import Foundation
 
-public enum AuthorizationErrorCodes: Error {
-    case unauthorized
-    case certificateError
-}
-
 /// API Authorization
 public protocol Authorization: AnyObject where Self: Sendable {
     
