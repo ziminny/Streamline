@@ -102,7 +102,8 @@ internal final class APIRequester: Sendable {
         }
         
         if response.statusCode == HTTPStatusCodes.unauthorized {
-            guard let authorization = authorization else {
+            guard let authorization else {
+                isCancelableRequestGetRefreshToken = true
                 PLMLogger.logIt("Error in \(#function): authorization provider not implemented.")
                 throw self.dispachError("Authorization provider not implemented.")
             }

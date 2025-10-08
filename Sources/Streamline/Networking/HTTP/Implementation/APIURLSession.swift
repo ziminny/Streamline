@@ -30,7 +30,7 @@ public final class APIURLSession: NSObject, APIURLSessionProtocol {
     /// Private queue for synchronizing access and delegate callbacks.
     public nonisolated let privateQueue = DispatchQueue(label: "com.APIURLSession.URLSessionConnectivity", qos: .background)
     
-    public var onMetric: ((NetworkMetric) -> Void)?
+    public nonisolated(unsafe) var onMetric: ((NetworkMetric) -> Void)?
     
     /// Private initializer to enforce singleton pattern.
     override private init() {
