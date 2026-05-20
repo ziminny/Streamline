@@ -36,6 +36,8 @@ public struct APIConfiguration: Sendable {
     //    return APIURLSession(delegate: self)
     // }
     
+    private(set) var publicKeyPinningProps: PublicKeyPinningProps?
+    
     /// Method to configure the application with the base URL, port, API key, and language.
     ///
     /// - Parameters:
@@ -47,12 +49,14 @@ public struct APIConfiguration: Sendable {
         _ baseURL: String,
         _ port: Int? = nil,
         _ apiKey: String? = nil,
-        _ language: Language = .enUS) {
-            
+        _ language: Language = .enUS,
+        _ publicKeyPinningProps: PublicKeyPinningProps? = nil
+    ) {
             self.baseUrl = baseURL
             self.port = port
             self.apiKey = apiKey
             self.language = language
+            self.publicKeyPinningProps = publicKeyPinningProps
         }
     
     /// Private initializer method.

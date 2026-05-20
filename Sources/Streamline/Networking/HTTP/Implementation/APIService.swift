@@ -54,7 +54,7 @@ public final class APIService: Sendable {
     @discardableResult
     public func certificate(keychain: PSKeychainCertificateProtocol = PSKeychainCertificateHandler()) -> Self {
         //#if DEVELOPMENT || RELEASE
-        apiRequester.apiURLSession.certificateInterceptor = PSURLSessionLoadCertificate(keychain: keychain)
+        //apiRequester.apiURLSession.certificateInterceptor = PSURLSessionLoadCertificate(keychain: keychain)
         //#endif
         return self
     }

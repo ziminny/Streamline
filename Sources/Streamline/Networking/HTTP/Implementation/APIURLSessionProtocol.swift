@@ -23,6 +23,6 @@ public protocol APIURLSessionProtocol: Sendable where Self: NSObject & URLSessio
     var privateQueue: DispatchQueue { get }
     
     /// Optional interceptor for handling certificate challenges.
-    var certificateInterceptor: PSURLSessionLoadCertificate? { get set }
+    //var certificateInterceptor: PSURLSessionLoadCertificate? { get set }
 }
 

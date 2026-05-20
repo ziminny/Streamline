@@ -7,6 +7,7 @@
 
 import Foundation
 import Network
+import CryptoKit
 
 /// Class that handles the URL session for the API.
 public final class APIURLSession: NSObject, APIURLSessionProtocol {
@@ -15,7 +16,7 @@ public final class APIURLSession: NSObject, APIURLSessionProtocol {
     public static let shared: APIURLSession = APIURLSession()
     
     /// Optional certificate interceptor for custom handling of SSL challenges.
-    public nonisolated(unsafe) var certificateInterceptor: PSURLSessionLoadCertificate?
+    //public nonisolated(unsafe) var certificateInterceptor: PSURLSessionLoadCertificate?
     
     /// Delegate for connectivity communication.
     public nonisolated(unsafe) weak var delegate: URLSessionConnectivity?
@@ -66,21 +67,56 @@ extension APIURLSession: URLSessionTaskDelegate, URLSessionDelegate {
         didReceive challenge: URLAuthenticationChallenge,
         completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
     ) {
-        do {
-            if let certificateInterceptor {
-                try certificateInterceptor.urlSession(
-                    session,
-                    didReceive: challenge,
-                    completionHandler: completionHandler
-                )
-                return
+        
+        if let publicKeyPinningProps = APIConfiguration.shared.publicKeyPinningProps {
+            if let trust = challenge.protectionSpace.serverTrust {
+                
+                guard let certificate = SecTrustGetCertificateAtIndex(trust, 0) else {
+                    completionHandler(
+                        .cancelAuthenticationChallenge,
+                        nil
+                    )
+                    return
+                }
+                
+                guard let pin =
+                        SSLPinningHelper.publicKeyHash(
+                            from: certificate
+                        ) else {
+                    completionHandler(
+                        .cancelAuthenticationChallenge,
+                        nil
+                    )
+                    return
+                }
+                
+                if !publicKeyPinningProps.validPins.contains(pin) {
+                    completionHandler(
+                        .cancelAuthenticationChallenge,
+                        nil
+                    )
+                    return
+                }
             }
-            completionHandler(.performDefaultHandling, nil)
-        } catch {
-            // Handle error in processing challenge.
-            print("Error handling challenge:", error)
-            completionHandler(.performDefaultHandling, nil)
         }
+        
+        completionHandler(.performDefaultHandling, nil)
+        
+//        do {
+//            if let certificateInterceptor {
+//                try certificateInterceptor.urlSession(
+//                    session,
+//                    didReceive: challenge,
+//                    completionHandler: completionHandler
+//                )
+//                return
+//            }
+//            completionHandler(.performDefaultHandling, nil)
+//        } catch {
+//            // Handle error in processing challenge.
+//            print("Error handling challenge:", error)
+//            completionHandler(.performDefaultHandling, nil)
+//        }
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
@@ -97,4 +133,57 @@ extension APIURLSession: URLSessionTaskDelegate, URLSessionDelegate {
 public extension URLSessionConnectivity {
     /// Default URL session configuration when not a background task.
     var configurationSession: URLSessionConfiguration { .noBackgroundTask }
+}
+
+private final class SSLPinningHelper {
+
+    static func publicKeyHash(
+        from certificate: SecCertificate
+    ) -> String? {
+
+        guard let publicKey =
+                SecCertificateCopyKey(certificate)
+        else {
+            return nil
+        }
+
+        var error: Unmanaged<CFError>?
+
+        guard let publicKeyData =
+                SecKeyCopyExternalRepresentation(
+                    publicKey,
+                    &error
+                ) as Data?
+        else {
+            return nil
+        }
+
+        /**
+         RSA 2048 ASN.1 Header
+         */
+        let ecHeader: [UInt8] = [
+            0x30, 0x59,
+            0x30, 0x13,
+            0x06, 0x07,
+            0x2A, 0x86,
+            0x48, 0xCE,
+            0x3D, 0x02,
+            0x01,
+            0x06, 0x08,
+            0x2A, 0x86,
+            0x48, 0xCE,
+            0x3D, 0x03,
+            0x01, 0x07,
+            0x03, 0x42,
+            0x00
+        ]
+
+        var data = Data(ecHeader)
+
+        data.append(publicKeyData)
+
+        let hash = SHA256.hash(data: data)
+
+        return Data(hash).base64EncodedString()
+    }
 }
